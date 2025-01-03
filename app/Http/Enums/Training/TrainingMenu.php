@@ -12,6 +12,7 @@ class TrainingMenu
     const PUSH_UP = '腕立て伏せ';
     const SQUAT = 'スクワット';
     const CORE_TRAINING = '体幹';
+    const HANDSTAND = '倒立';
 
     static function getSelectItems()
     {
@@ -27,6 +28,10 @@ class TrainingMenu
             [
                 'value' => self::CORE_TRAINING,
                 'text' => self::CORE_TRAINING
+            ],
+            [
+                'value' => self::HANDSTAND,
+                'text' => self::HANDSTAND
             ]
         ];
     }

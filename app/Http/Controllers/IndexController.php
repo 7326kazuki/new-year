@@ -3,13 +3,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Enums\Counterplan\CounterplanType;
 use App\Http\Enums\Training\TrainingMenu;
 use App\Http\Enums\Unit\UnitType;
+use App\Models\Alcohol;
 use App\Models\Book;
 use App\Models\Money;
 use App\Models\Training;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
 /**
@@ -22,27 +25,67 @@ class IndexController extends Controller
     {
         $startToday = CarbonImmutable::today()->startOfDay()->addHours(5);
         $endToday = $startToday->addDay();
-        $isTrained = Training::query()
+        $trainings = Training::query()
             ->whereBetween('created_at', [
                 $startToday->format('Y-m-d H:i:s'),
                 $endToday->format('Y-m-d H:i:s')
             ])
-            ->exists();
-        $isRead = Book::query()
+            ->get()
+            ->groupBy('menu')
+            ->map(
+                function (Collection $trainings, $key) {
+                    /** @var Training $training */
+                    $training = $trainings->first();
+                    return [
+                        'menu' => $key,
+                        'times' => $trainings->sum('times') . $training->unit
+                    ];
+                }
+            )->values();
+        $books = Book::query()
             ->whereBetween('created_at', [
                 $startToday->format('Y-m-d H:i:s'),
                 $endToday->format('Y-m-d H:i:s')
             ])
-            ->exists();
+            ->get()
+            ->unique('name');
+        $alcohols = Alcohol::query()
+            ->whereBetween('created_at', [
+                $startToday->format('Y-m-d H:i:s'),
+                $endToday->format('Y-m-d H:i:s')
+            ])
+            ->get()
+            ->groupBy('counterplan')
+            ->map(
+                function (Collection $alcohols, $key) {
+                    /** @var Alcohol $alcohol */
+                    $alcohol = $alcohols->first();
+                    return [
+                        'counterplan' => $key,
+                        'times' => $alcohols->count() . '回'
+                    ];
+                }
+            )->values();
+        $totalPrice = Money::query()
+            ->where('type', '食費')
+            ->whereBetween('created_at', [
+                $startToday->format('Y-m-d H:i:s'),
+                $endToday->format('Y-m-d H:i:s')
+            ])
+            ->get()
+            ->sum('price');
         return Inertia::render(
             'Index',
             [
                 'selectItems' => [
                     'trainingMenu' => TrainingMenu::getSelectItems(),
-                    'unitType' => UnitType::getSelectItems()
+                    'unitType' => UnitType::getSelectItems(),
+                    'counterplanType' => CounterplanType::getSelectItems()
                 ],
-                'isTrained' => $isTrained,
-                'isRead' => $isRead
+                'trainings' => $trainings,
+                'books' => $books,
+                'alcohols' => $alcohols,
+                'totalPrice' => $totalPrice
             ]
         );
     }
@@ -65,7 +108,7 @@ class IndexController extends Controller
             );
         }
         if ($request->get('requestType') === 'alcohol') {
-            Book::query()->create(
+            Alcohol::query()->create(
                 $request['alcohol']
             );
         }

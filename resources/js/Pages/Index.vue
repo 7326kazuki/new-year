@@ -1,6 +1,6 @@
 <script setup>
-import {ref, computed} from "@vue/reactivity";
-import {router, useForm, usePage} from '@inertiajs/vue3'
+import {ref} from "@vue/reactivity";
+import {router, useForm} from '@inertiajs/vue3'
 
 defineProps({
     selectItems: {
@@ -11,10 +11,16 @@ defineProps({
         unitType: {
             value: String,
             text: String
-        }
+        },
+        counterplanType: {
+            value: String,
+            text: String
+        },
     },
-    isTrained: Boolean,
-    isRead: Boolean,
+    trainings: Object,
+    books: Object,
+    alcohols: Object,
+    totalPrice: Number
 });
 
 const formRequest = useForm({
@@ -40,6 +46,7 @@ let isOpenTrainingModal = ref(false);
 let isOpenBookModal = ref(false);
 let isOpenEatMoneyModal = ref(false);
 let isOpenAlcoholModal = ref(false);
+let isOpenHistoryModal = ref(false);
 
 function closeModal() {
     isOpenModal.value = false;
@@ -47,6 +54,7 @@ function closeModal() {
     isOpenBookModal.value = false;
     isOpenEatMoneyModal.value = false;
     isOpenAlcoholModal.value = false;
+    isOpenHistoryModal.value = false;
     formRequest.reset();
 }
 
@@ -63,6 +71,9 @@ function openModal(name) {
     }
     if (name === "alcohol") {
         isOpenAlcoholModal.value = true;
+    }
+    if (name === "history") {
+        isOpenHistoryModal.value = true;
     }
 }
 
@@ -89,10 +100,12 @@ function post() {
 
 <template>
     <div class="main">
-        <div id="training" class="area" @click="openModal('training')" :style="isTrained ? '' : 'background: darkred !important'">
+        <div id="training" class="area" @click="openModal('training')"
+             :style="trainings.length > 0 ? '' : 'background: darkred !important'">
             筋トレ
         </div>
-        <div id="book" class="area" @click="openModal('book')" :style="isRead ? '' : 'background: darkred !important'">
+        <div id="book" class="area" @click="openModal('book')"
+             :style="books.length > 0 ? '' : 'background: darkred !important'">
             読書
         </div>
         <div id="money" class="area" @click="openModal('money')">
@@ -100,6 +113,9 @@ function post() {
         </div>
         <div id="alcohol" class="area" @click="openModal('alcohol')">
             お酒我慢
+        </div>
+        <div id="history" class="area" @click="openModal('history')">
+            履歴
         </div>
     </div>
     <div v-show="isOpenModal" class="modal">
@@ -126,10 +142,88 @@ function post() {
                     金額: <input v-model="formRequest.money.price" type="number">
                 </div>
                 <div v-show="isOpenAlcoholModal">
-                    対策: <input v-model="formRequest.alcohol.counterplan">
+                    対策:
+                    <select v-model="formRequest.alcohol.counterplan">
+                        <option :value="undefined"></option>
+                        <option v-for="item in selectItems.counterplanType" :value="item.value">{{ item.text }}</option>
+                    </select>
+                </div>
+                <div v-show="isOpenHistoryModal">
+                    <div class="history-area">
+                        筋トレ
+                        <table>
+                            <thead>
+                            <tr>
+                                <td>
+                                    メニュー
+                                </td>
+                                <td>
+                                    合計
+                                </td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="training in trainings">
+                                <td>
+                                    {{ training.menu }}
+                                </td>
+                                <td>
+                                    {{ training.times }}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="history-area">
+                        読書
+                        <table>
+                            <thead>
+                            <tr>
+                                <td>
+                                    書籍名
+                                </td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="book in books">
+                                <td>
+                                    {{ book.name }}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="history-area">
+                        お酒我慢
+                        <table>
+                            <thead>
+                            <tr>
+                                <td>
+                                    対策
+                                </td>
+                                <td>
+                                    合計
+                                </td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="alcohol in alcohols">
+                                <td>
+                                    {{ alcohol.counterplan }}
+                                </td>
+                                <td>
+                                    {{ alcohol.times }}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="history-area">
+                        食費: {{ totalPrice }}
+                    </div>
                 </div>
                 <div class="button-area">
-                    <button @click="post()">送信</button>
+                    <button v-show="!isOpenHistoryModal" @click="post()">送信</button>
                     <button @click="closeModal()">閉じる</button>
                 </div>
             </div>
@@ -138,6 +232,21 @@ function post() {
 </template>
 
 <style>
+.history-area {
+    text-align: left;
+}
+.history-area:nth-child(n+2) {
+    margin-top: 5%;
+}
+table {
+    border: black solid 1px;
+    width: 100%;
+    border-collapse: collapse;
+}
+table tr td {
+    text-align: center;
+    border: black solid 1px;
+}
 .button-area {
     margin-top: 10%;
     text-align: center;
