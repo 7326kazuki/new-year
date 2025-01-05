@@ -15,7 +15,8 @@ class TrainingMenu
         '体幹',
         '倒立',
         'ストレッチ',
-        'ジム'
+        'ジム',
+        'ランニング'
     ];
 
     static function getSelectItems()
