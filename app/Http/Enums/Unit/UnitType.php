@@ -6,20 +6,21 @@ namespace App\Http\Enums\Unit;
 
 class UnitType
 {
-    const MINUTE = '分';
-    const TIMES = '回';
+    const UNITS = [
+        '分',
+        '回'
+    ];
 
     static function getSelectItems()
     {
-        return [
-            [
-                'value' => self::MINUTE,
-                'text' => self::MINUTE
-            ],
-            [
-                'value' => self::TIMES,
-                'text' => self::TIMES
-            ],
-        ];
+        return collect(self::UNITS)
+            ->map(
+                function (string $menu) {
+                    return [
+                        'value' => $menu,
+                        'text' => $menu
+                    ];
+                }
+            );
     }
 }

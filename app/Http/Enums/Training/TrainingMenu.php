@@ -9,30 +9,25 @@ namespace App\Http\Enums\Training;
  */
 class TrainingMenu
 {
-    const PUSH_UP = '腕立て伏せ';
-    const SQUAT = 'スクワット';
-    const CORE_TRAINING = '体幹';
-    const HANDSTAND = '倒立';
+    const MENUS = [
+        '腕立て伏せ',
+        'スクワット',
+        '体幹',
+        '倒立',
+        'ストレッチ',
+        'ジム'
+    ];
 
     static function getSelectItems()
     {
-        return [
-            [
-                'value' => self::PUSH_UP,
-                'text' => self::PUSH_UP
-            ],
-            [
-                'value' => self::SQUAT,
-                'text' => self::SQUAT
-            ],
-            [
-                'value' => self::CORE_TRAINING,
-                'text' => self::CORE_TRAINING
-            ],
-            [
-                'value' => self::HANDSTAND,
-                'text' => self::HANDSTAND
-            ]
-        ];
+        return collect(self::MENUS)
+            ->map(
+                function (string $menu) {
+                    return [
+                        'value' => $menu,
+                        'text' => $menu
+                    ];
+                }
+            );
     }
 }

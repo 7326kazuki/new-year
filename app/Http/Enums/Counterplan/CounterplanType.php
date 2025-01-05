@@ -9,15 +9,20 @@ namespace App\Http\Enums\Counterplan;
  */
 class CounterplanType
 {
-    const OTHER_DRINK = '他の飲み物で対応';
+    const COUNTERPLANS = [
+        '他の飲み物で対応'
+    ];
 
     static function getSelectItems()
     {
-        return [
-            [
-                'value' => self::OTHER_DRINK,
-                'text' => self::OTHER_DRINK
-            ],
-        ];
+        return collect(self::COUNTERPLANS)
+            ->map(
+                function (string $menu) {
+                    return [
+                        'value' => $menu,
+                        'text' => $menu
+                    ];
+                }
+            );
     }
 }
